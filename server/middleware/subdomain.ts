@@ -1,10 +1,11 @@
 // server/middleware/subdomain.ts
-import { defineEventHandler, getRequestHeaders } from "h3";
+import { defineEventHandler, getRequestHeaders, sendRedirect } from "h3";
 
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   // 요청 헤더에서 호스트 정보 가져오기
   const headers = getRequestHeaders(event);
   const host = headers.host || "";
+  const url = event.node.req.url || "";
 
   let subdomain = "main"; // 기본값
 
@@ -25,8 +26,8 @@ export default defineEventHandler((event) => {
       subdomain = parts[0];
     } else {
       // URL 쿼리 파라미터에서 서브도메인 확인
-      const url = new URL(`http://${host}${event.node.req.url || ""}`);
-      const querySubdomain = url.searchParams.get("subdomain");
+      const reqUrl = new URL(`http://${host}${url}`);
+      const querySubdomain = reqUrl.searchParams.get("subdomain");
       if (querySubdomain) {
         subdomain = querySubdomain;
       }
@@ -42,4 +43,24 @@ export default defineEventHandler((event) => {
 
   // 서브도메인 정보를 이벤트 컨텍스트에 저장
   event.context.subdomain = subdomain;
+
+  // 서브도메인이 'main'이 아니고 존재하는 경우에만 라우트 제한 적용
+  if (subdomain !== "main") {
+    // 허용된 경로 목록
+    const allowedPaths = ["/", "/api/portfolio"];
+
+    // 경로 추출 (쿼리 파라미터 제외)
+    const path = url.split("?")[0];
+
+    // 허용되지 않은 경로로 접근하는 경우 루트 경로로 리다이렉트
+    if (
+      !allowedPaths.some(
+        (allowedPath) =>
+          path === allowedPath || path.startsWith("/api/portfolio")
+      )
+    ) {
+      // 서브도메인 유지하면서 루트 경로로 리다이렉트
+      await sendRedirect(event, "/");
+    }
+  }
 });
