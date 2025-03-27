@@ -44,7 +44,6 @@
 <script setup lang="ts">
 import type { PortfolioApiResponse } from "@/types/api";
 
-// SSR 데이터 가져오기 - 직접 API 호출
 const { data: portfolioData } = await useFetch<PortfolioApiResponse>(
   "/api/portfolio",
   {

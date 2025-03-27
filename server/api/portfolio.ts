@@ -22,7 +22,6 @@ export default defineEventHandler(async (event) => {
       return response;
     }
 
-    // 서버 측 Supabase 클라이언트 가져오기
     const supabase = await serverSupabaseClient<Database>(event);
 
     // 프로필 데이터 가져오기
