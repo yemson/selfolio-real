@@ -1,25 +1,105 @@
+<template>
+  <div class="max-w-md mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-2">로그인</h1>
+    <p class="text-gray-500 mb-6">아래에 로그인 정보를 입력해주세요.</p>
+
+    <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
+      <UFormField label="이메일" name="email" size="xl">
+        <UInput
+          v-model="state.email"
+          placeholder="이메일 주소 입력"
+          class="w-full"
+        />
+      </UFormField>
+
+      <UFormField label="비밀번호" name="password" size="xl">
+        <UInput
+          v-model="state.password"
+          type="password"
+          placeholder="••••••••"
+          class="w-full"
+        />
+      </UFormField>
+
+      <div class="flex items-center justify-between">
+        <div>
+          <UCheckbox v-model="rememberMe" label="아이디 저장" />
+        </div>
+        <NuxtLink
+          to="/forgot-password"
+          class="text-sm text-primary-500 hover:underline"
+        >
+          비밀번호 찾기
+        </NuxtLink>
+      </div>
+
+      <div v-if="error" class="p-3 text-sm text-red-500 bg-red-50 rounded-md">
+        {{ error }}
+      </div>
+
+      <UButton
+        type="submit"
+        block
+        color="primary"
+        :loading="loading"
+        :disabled="loading"
+        size="xl"
+      >
+        로그인
+      </UButton>
+
+      <div class="text-center mt-4 text-sm">
+        계정이 없으신가요?
+        <NuxtLink to="/register" class="text-primary-500 hover:underline"
+          >회원가입</NuxtLink
+        >
+      </div>
+    </UForm>
+
+    <div class="text-center text-xs text-gray-400 mt-8">© Selfolio</div>
+  </div>
+</template>
+
 <script setup lang="ts">
-import * as z from "zod";
+import { z } from "zod";
 import type { FormSubmitEvent } from "@nuxt/ui";
 
-// 유효성 검사 스키마 정의
+definePageMeta({
+  layout: "auth",
+});
+
+// 폼 유효성 검사 스키마
 const schema = z.object({
-  email: z.string().email("Invalid email"),
-  password: z.string().min(8, "Must be at least 8 characters"),
+  email: z
+    .string({
+      required_error: "이메일을 입력해주세요.",
+    })
+    .email("유효한 이메일을 입력해주세요"),
+  password: z
+    .string({
+      required_error: "비밀번호를 입력해주세요.",
+    })
+    .min(1, "비밀번호를 입력해주세요"),
 });
 
 type Schema = z.output<typeof schema>;
 
-// 로그인 폼 상태
+// 폼 상태
 const state = reactive<Partial<Schema>>({
   email: undefined,
   password: undefined,
 });
 
+// 토스트 컴포서블
 const toast = useToast();
+
+// Supabase 클라이언트
+const supabase = useSupabaseClient();
+
+// UI 상태
+const rememberMe = ref(false);
 const loading = ref(false);
 const error = ref("");
-const supabase = useSupabaseClient();
 const router = useRouter();
 
 // 로그인 폼 제출 핸들러
@@ -62,47 +142,3 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   }
 }
 </script>
-
-<template>
-  <div class="max-w-md mx-auto">
-    <h1 class="text-2xl font-bold mb-6">로그인</h1>
-
-    <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
-      <UFormField label="이메일" name="email">
-        <UInput v-model="state.email" placeholder="your@email.com" />
-      </UFormField>
-
-      <UFormField label="비밀번호" name="password">
-        <UInput
-          v-model="state.password"
-          type="password"
-          placeholder="********"
-        />
-      </UFormField>
-
-      <div v-if="error" class="p-3 text-sm text-red-500 bg-red-50 rounded-md">
-        {{ error }}
-      </div>
-
-      <div class="flex justify-between items-center">
-        <NuxtLink
-          to="/forgot-password"
-          class="text-sm text-blue-500 hover:underline"
-        >
-          비밀번호를 잊으셨나요?
-        </NuxtLink>
-
-        <UButton type="submit" :loading="loading" :disabled="loading">
-          로그인
-        </UButton>
-      </div>
-
-      <div class="text-center mt-4 text-sm">
-        계정이 없으신가요?
-        <NuxtLink to="/register" class="text-blue-500 hover:underline"
-          >회원가입</NuxtLink
-        >
-      </div>
-    </UForm>
-  </div>
-</template>

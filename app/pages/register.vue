@@ -1,16 +1,113 @@
+<template>
+  <div class="max-w-md mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-2">회원가입</h1>
+    <p class="text-gray-500 mb-6">아래에 회원가입 정보를 입력해주세요.</p>
+
+    <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
+      <UFormField label="이메일" name="email" size="xl">
+        <UInput
+          v-model="state.email"
+          placeholder="이메일 주소 입력"
+          class="w-full"
+        />
+      </UFormField>
+
+      <UFormField label="닉네임" name="username" size="xl">
+        <UInput
+          v-model="state.username"
+          placeholder="닉네임 입력"
+          class="w-full"
+        />
+        <template #description>
+          <span class="text-xs text-gray-500">
+            영문, 숫자, 언더스코어(_)만 사용 가능합니다. 3-20자 사이로
+            입력해주세요.
+          </span>
+        </template>
+      </UFormField>
+
+      <UFormField label="비밀번호" name="password" size="xl">
+        <UInput
+          v-model="state.password"
+          type="password"
+          placeholder="••••••••"
+          class="w-full"
+        />
+      </UFormField>
+
+      <UFormField label="비밀번호 확인" name="confirmPassword" size="xl">
+        <UInput
+          v-model="state.confirmPassword"
+          type="password"
+          placeholder="••••••••"
+          class="w-full"
+        />
+      </UFormField>
+
+      <UFormField name="terms">
+        <UCheckbox
+          v-model="state.terms"
+          label="이용약관 및 개인정보처리방침에 동의합니다"
+        />
+      </UFormField>
+
+      <div v-if="error" class="p-3 text-sm text-red-500 bg-red-50 rounded-md">
+        {{ error }}
+      </div>
+
+      <UButton
+        type="submit"
+        block
+        color="primary"
+        :loading="loading"
+        :disabled="loading"
+        size="xl"
+      >
+        회원가입
+      </UButton>
+
+      <div class="text-center mt-4 text-sm">
+        이미 계정이 있으신가요?
+        <NuxtLink to="/login" class="text-primary-500 hover:underline">
+          로그인
+        </NuxtLink>
+      </div>
+    </UForm>
+
+    <div class="text-center text-xs text-gray-400 mt-8">© Selfolio</div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import * as z from "zod";
 import type { FormSubmitEvent } from "@nuxt/ui";
 
+definePageMeta({
+  layout: "auth",
+});
+
 // 유효성 검사 스키마 정의
-// 개복잡하네
 const schema = z
   .object({
-    email: z.string().email("유효한 이메일 주소를 입력해주세요"),
-    password: z.string().min(8, "비밀번호는 최소 8자 이상이어야 합니다"),
-    confirmPassword: z.string().min(8, "비밀번호는 최소 8자 이상이어야 합니다"),
+    email: z
+      .string({
+        required_error: "이메일을 입력해주세요.",
+      })
+      .email("유효한 이메일 주소를 입력해주세요"),
+    password: z
+      .string({
+        required_error: "비밀번호를 입력해주세요.",
+      })
+      .min(8, "비밀번호는 최소 8자 이상이어야 합니다"),
+    confirmPassword: z
+      .string({
+        required_error: "비밀번호 확인을 입력해주세요.",
+      })
+      .min(8, "비밀번호는 최소 8자 이상이어야 합니다"),
     username: z
-      .string()
+      .string({
+        required_error: "닉네임을 입력해주세요.",
+      })
       .min(3, "닉네임은 최소 3자 이상이어야 합니다")
       .max(20, "닉네임은 최대 20자까지 가능합니다")
       .regex(
@@ -68,7 +165,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     }
 
     // 회원가입 진행
-    // auth 테이블에 생성되는거 트리거해서 profiles 테이블에도 생성되게 함, 거기서 username을 넣어줌
     const { data, error: authError } = await supabase.auth.signUp({
       email: event.data.email,
       password: event.data.password,
@@ -106,62 +202,3 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   }
 }
 </script>
-
-<template>
-  <div class="max-w-md mx-auto">
-    <h1 class="text-2xl font-bold mb-6">회원가입</h1>
-
-    <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
-      <UFormField label="이메일" name="email">
-        <UInput v-model="state.email" placeholder="your@email.com" />
-      </UFormField>
-
-      <UFormField label="닉네임 (영문/숫자/언더스코어만 가능)" name="username">
-        <UInput v-model="state.username" placeholder="username_123" />
-        <template #description>
-          <span class="text-xs text-gray-500"
-            >영문, 숫자, 언더스코어(_)만 사용 가능합니다. 3-20자 사이로
-            입력해주세요.</span
-          >
-        </template>
-      </UFormField>
-
-      <UFormField label="비밀번호" name="password">
-        <UInput
-          v-model="state.password"
-          type="password"
-          placeholder="********"
-        />
-      </UFormField>
-
-      <UFormField label="비밀번호 확인" name="confirmPassword">
-        <UInput
-          v-model="state.confirmPassword"
-          type="password"
-          placeholder="********"
-        />
-      </UFormField>
-
-      <UFormField name="terms">
-        <UCheckbox
-          v-model="state.terms"
-          label="이용약관 및 개인정보처리방침에 동의합니다"
-        />
-      </UFormField>
-
-      <div v-if="error" class="p-3 text-sm text-red-500 bg-red-50 rounded-md">
-        {{ error }}
-      </div>
-
-      <div class="flex justify-between items-center">
-        <NuxtLink to="/login" class="text-sm text-blue-500 hover:underline">
-          이미 계정이 있으신가요?
-        </NuxtLink>
-
-        <UButton type="submit" :loading="loading" :disabled="loading">
-          회원가입
-        </UButton>
-      </div>
-    </UForm>
-  </div>
-</template>
