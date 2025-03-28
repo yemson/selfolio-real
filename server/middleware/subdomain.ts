@@ -36,12 +36,9 @@ export default defineEventHandler(async (event) => {
     // 실제 환경
     const parts = host.split(".");
 
-    // www 도메인 처리
-    if (parts[0] === "www") {
-      // www는 메인 도메인으로 취급
-      subdomain = "main";
-    } else if (parts.length > 2) {
-      // 서브도메인 있음 (예: blog.example.com)
+    // www는 DNS에서 리다이렉트 처리하므로 여기서는 모든 서브도메인을 동일하게 취급
+    if (parts.length > 2) {
+      // 서브도메인 있음 (예: blog.example.com, www.example.com)
       subdomain = parts[0];
     }
   }
