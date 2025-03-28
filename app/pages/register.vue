@@ -148,6 +148,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   error.value = "";
 
   try {
+    // 닉네임이 www인지 확인
+    if (event.data.username === "www") {
+      throw new Error("닉네임으로 'www'는 사용할 수 없습니다.");
+    }
+
     // Supabase 회원가입 처리
     // 먼저 닉네임 중복 확인
     const { data: existingUsers, error: usernameCheckError } = await supabase
