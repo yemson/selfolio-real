@@ -26,7 +26,6 @@ const navigateToLogin = () => {
   let loginUrl;
 
   // 도메인 추출 로직
-  // 예: yemson.selfolio.im -> selfolio.im
   const parts = currentHost.split(".");
 
   // 최소 2개 이상의 부분이 있는지 확인 (서브도메인.도메인.확장자)
