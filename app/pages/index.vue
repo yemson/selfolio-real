@@ -11,9 +11,8 @@
       class="slide-enter"
     >
       <MDC
-        class="prose prose-sm"
+        class="prose prose-neutral max-w-none"
         :value="portfolioData.portfolio.content"
-        tag="article"
       />
     </div>
     <div

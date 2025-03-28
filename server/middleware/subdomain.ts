@@ -49,8 +49,29 @@ export default defineEventHandler(async (event) => {
     // 허용된 경로 목록
     const allowedPaths = ["/", "/api/portfolio"];
 
+    // 메인 도메인으로 리다이렉트하기 위한 특별 경로 목록
+    const mainDomainRedirectPaths = ["/login"];
+
     // 경로 추출 (쿼리 파라미터 제외)
     const path = url.split("?")[0];
+
+    // 메인 도메인으로 리다이렉트해야 하는 경로인 경우
+    if (mainDomainRedirectPaths.includes(path)) {
+      // 메인 도메인 구성
+      let mainDomain;
+      if (isLocalhost) {
+        mainDomain = "localhost:3000"; // 로컬호스트 환경
+      } else {
+        // 실제 환경에서 메인 도메인 추출 (예: example.com)
+        mainDomain = host.split(".").slice(-2).join(".");
+      }
+
+      const protocol = event.node.req.headers["x-forwarded-proto"] || "http";
+      const redirectUrl = `${protocol}://${mainDomain}${path}`;
+
+      await sendRedirect(event, redirectUrl, 302);
+      return;
+    }
 
     // 허용되지 않은 경로로 접근하는 경우 루트 경로로 리다이렉트
     if (
