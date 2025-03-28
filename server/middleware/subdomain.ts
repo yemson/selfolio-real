@@ -35,7 +35,12 @@ export default defineEventHandler(async (event) => {
   } else {
     // 실제 환경
     const parts = host.split(".");
-    if (parts.length > 2) {
+
+    // www 도메인 처리
+    if (parts[0] === "www") {
+      // www는 메인 도메인으로 취급
+      subdomain = "main";
+    } else if (parts.length > 2) {
       // 서브도메인 있음 (예: blog.example.com)
       subdomain = parts[0];
     }

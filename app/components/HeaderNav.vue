@@ -28,17 +28,29 @@ const navigateToLogin = () => {
   // 도메인 추출 로직
   const parts = currentHost.split(".");
 
-  // 최소 2개 이상의 부분이 있는지 확인 (서브도메인.도메인.확장자)
-  if (parts.length >= 2) {
-    // 마지막 두 부분만 가져옴 (도메인.확장자)
-    const mainDomain = parts.slice(-2).join(".");
-    loginUrl = `${protocol}//${mainDomain}/login`;
+  // 로컬호스트 환경 확인
+  if (currentHost.includes("localhost")) {
+    loginUrl = `${protocol}//localhost:3000/login`;
   } else {
-    // 예상치 못한 형식인 경우 현재 도메인 사용
-    loginUrl = `${protocol}//${currentHost}/login`;
+    // "www" 제거하고 도메인 구성
+    let mainDomain;
+
+    if (parts[0] === "www") {
+      // www.example.com -> example.com
+      mainDomain = parts.slice(1).join(".");
+    } else if (parts.length > 2) {
+      // subdomain.example.com -> example.com
+      mainDomain = parts.slice(-2).join(".");
+    } else {
+      // 이미 메인 도메인인 경우 (example.com)
+      mainDomain = currentHost;
+    }
+
+    loginUrl = `${protocol}//${mainDomain}/login`;
   }
 
   // 디버깅을 위한 로그
+  console.log("Original host:", currentHost);
   console.log("Navigating to:", loginUrl);
 
   // 해당 URL로 이동
