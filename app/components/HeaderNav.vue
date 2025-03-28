@@ -25,14 +25,22 @@ const navigateToLogin = () => {
   const protocol = window.location.protocol;
   let loginUrl;
 
-  // 로컬호스트 환경인 경우
-  if (currentHost.includes("localhost")) {
-    loginUrl = `http://localhost:3000/login`;
+  // 도메인 추출 로직
+  // 예: yemson.selfolio.im -> selfolio.im
+  const parts = currentHost.split(".");
+
+  // 최소 2개 이상의 부분이 있는지 확인 (서브도메인.도메인.확장자)
+  if (parts.length >= 2) {
+    // 마지막 두 부분만 가져옴 (도메인.확장자)
+    const mainDomain = parts.slice(-2).join(".");
+    loginUrl = `${protocol}//${mainDomain}/login`;
   } else {
-    // 실제 환경인 경우 서브도메인 제거하고 메인 도메인만 추출
-    const mainDomain = currentHost.split(".").slice(-2).join(".");
-    loginUrl = `${protocol}://${mainDomain}/login`;
+    // 예상치 못한 형식인 경우 현재 도메인 사용
+    loginUrl = `${protocol}//${currentHost}/login`;
   }
+
+  // 디버깅을 위한 로그
+  console.log("Navigating to:", loginUrl);
 
   // 해당 URL로 이동
   window.location.href = loginUrl;
