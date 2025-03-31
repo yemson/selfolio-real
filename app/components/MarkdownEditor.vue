@@ -2,6 +2,7 @@
   <div
     class="flex flex-col h-[calc(100dvh-66px)] w-full bg-gray-100 overflow-hidden divide-x divide-gray-200 relative"
   >
+    <!-- 기존 마크다운 에디터 UI -->
     <div class="flex flex-1 w-full overflow-hidden divide-x divide-gray-200">
       <div class="flex-none p-2 bg-gray-50">
         <UNavigationMenu
@@ -39,6 +40,7 @@
             />
           </div>
 
+          <!-- 저장 버튼: 이제 부모 컴포넌트에서 전달받은 핸들러 사용 -->
           <UButton
             icon="i-lucide-save"
             size="sm"
@@ -46,10 +48,11 @@
             title="저장하기"
             label="저장하기"
             :loading="loading"
-            @click="isSaveModalOpen = true"
+            @click="$emit('save-click')"
           />
         </div>
 
+        <!-- 나머지 에디터 UI는 동일 -->
         <!-- Content area -->
         <div class="flex flex-1 overflow-hidden">
           <!-- 마크다운 편집 영역 -->
@@ -80,7 +83,7 @@
             <!-- 텍스트 에디터 -->
             <textarea
               ref="textareaRef"
-              v-model="markdownContent"
+              v-model="content"
               class="font-mono w-full flex-1 p-4 resize-none outline-none border-none overflow-auto"
               placeholder="내용을 입력하세요..."
             />
@@ -96,70 +99,23 @@
             class="overflow-auto bg-white border-l border-gray-200"
           >
             <div class="prose max-w-none p-4">
-              <MDC :value="markdownContent" tag="article" />
+              <MDC :value="content" tag="article" />
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-
-  <UModal
-    v-model:open="isSaveModalOpen"
-    :dismissible="false"
-    title="포트폴리오를 저장하시겠습니까?"
-    description="포트폴리오 저장 정보를 입력해주세요"
-  >
-    <template #body>
-      <div class="flex flex-col gap-6 w-full">
-        <div class="space-y-2">
-          <p class="text-sm text-gray-500">포트폴리오 제목을 입력하세요.</p>
-          <input
-            type="text"
-            class="border border-gray-300 rounded p-2 w-full"
-            placeholder="포트폴리오 제목"
-            v-model="portfolioTitle"
-          />
-        </div>
-        <div class="space-y-2">
-          <USwitch
-            label="대표 포트폴리오로 설정"
-            v-model="isDefaultPortfolio"
-          />
-        </div>
-      </div>
-    </template>
-
-    <template #footer>
-      <div class="flex justify-end gap-2 w-full">
-        <UButton
-          variant="outline"
-          label="취소"
-          @click="isSaveModalOpen = false"
-        />
-        <UButton
-          variant="solid"
-          label="저장하기"
-          :loading="loading"
-          @click="
-            savePortfolio({
-              title: portfolioTitle,
-              content: markdownContent,
-              is_featured: isDefaultPortfolio,
-            })
-          "
-        />
-      </div>
-    </template>
-  </UModal>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
 import type { NavigationMenuItem } from "@nuxt/ui";
 
-// 마크다운 내용 저장
-const markdownContent = ref(`
+// Props로 받아오는 내용
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: `
 # 마크다운 에디터
 
 ## 기능
@@ -170,7 +126,7 @@ const markdownContent = ref(`
 ### 코드 블록
 \`\`\`javascript
 function hello() {
-console.log("Hello, World!");
+  console.log("Hello, World!");
 }
 \`\`\`
 
@@ -179,47 +135,40 @@ console.log("Hello, World!");
 
 ##### 링크
 [링크 예시](https://example.com)
-`);
+`,
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+});
 
-const portfolioTitle = ref("");
+// 이벤트 정의
+const emit = defineEmits(["update:modelValue", "save-click"]);
 
-const isDefaultPortfolio = ref(false);
+// 내부적으로 사용할 컨텐츠 참조 변수
+const content = ref(props.modelValue);
+
+// 모델값이 바뀌면 내부 컨텐츠도 업데이트
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    content.value = newValue;
+  }
+);
+
+// 내부 컨텐츠가 바뀌면 부모 컴포넌트에 알림
+watch(
+  () => content.value,
+  (newValue) => {
+    emit("update:modelValue", newValue);
+  }
+);
 
 // 미리보기 모드 설정 (split: 분할, edit: 편집만, preview: 미리보기만)
 const previewMode = ref<"split" | "edit" | "preview">("split");
 
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
-
-const isSaveModalOpen = ref(false);
-
-// 포트폴리오 관리 컴포서블
-const { loading, error, createPortfolio } = usePortfolio();
-
-// MarkdownEditor에서 전달받은 content를 저장
-const savePortfolio = async ({
-  title: title,
-  content: content,
-  is_featured: is_featured,
-}: {
-  title: string;
-  content: string;
-  is_featured: boolean;
-}) => {
-  await createPortfolio({
-    title: title,
-    content: content,
-    is_featured: is_featured,
-  });
-
-  if (error.value) {
-    console.error("포트폴리오 저장 실패:", error.value);
-  } else {
-    console.log("포트폴리오 저장 성공");
-    isSaveModalOpen.value = false;
-    portfolioTitle.value = "";
-    isDefaultPortfolio.value = false;
-  }
-};
 
 // 인라인 스타일 항목 타입 정의
 interface InlineItem {
@@ -404,7 +353,7 @@ const insertStyleAtCursor = (
 
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
-  const text = markdownContent.value;
+  const text = content.value;
 
   let newText: string;
   let newCursorPos: number;
@@ -441,7 +390,7 @@ const insertStyleAtCursor = (
     }, 0);
   }
 
-  markdownContent.value = newText;
+  content.value = newText;
 };
 
 // 블록 스타일 삽입 함수
@@ -455,7 +404,7 @@ const insertAtCursor = (
 
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
-  const text = markdownContent.value;
+  const text = content.value;
 
   let newText: string;
   let newCursorPos: number;
@@ -492,7 +441,7 @@ const insertAtCursor = (
     }, 0);
   }
 
-  markdownContent.value = newText;
+  content.value = newText;
 };
 </script>
 
