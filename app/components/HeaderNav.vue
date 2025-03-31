@@ -1,13 +1,26 @@
 <template>
   <div class="flex justify-between items-center h-8">
-    <div>Selfolio</div>
-    <UButton
-      v-if="start"
-      trailing-icon="i-lucide-arrow-right"
-      size="md"
-      @click="navigateToLogin"
-      >시작하기</UButton
-    >
+    <div class="cursor-pointer" @click="$router.push('/')">Selfolio</div>
+    <div class="flex gap-2">
+      <UButton
+        v-if="start && !user"
+        trailing-icon="i-lucide-arrow-right"
+        size="md"
+        @click="navigateToLogin"
+        >시작하기</UButton
+      >
+      <template v-else-if="user">
+        <UButton leading-icon="i-lucide-folder-open" variant="ghost"
+          >내 포트폴리오</UButton
+        >
+        <UButton
+          leading-icon="i-lucide-plus"
+          size="md"
+          @click="$router.push('/create')"
+          >새 포트폴리오</UButton
+        >
+      </template>
+    </div>
   </div>
 </template>
 
@@ -18,6 +31,8 @@ defineProps({
     default: false,
   },
 });
+
+const user = useSupabaseUser();
 
 const navigateToLogin = () => {
   // 현재 URL에서 호스트 부분 가져오기
@@ -47,5 +62,7 @@ const navigateToLogin = () => {
 
   // 해당 URL로 이동
   window.location.href = loginUrl;
+
+  history.pushState(null, "", loginUrl);
 };
 </script>
