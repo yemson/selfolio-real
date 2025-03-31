@@ -98,7 +98,7 @@
             }"
             class="overflow-auto bg-white border-l border-gray-200"
           >
-            <div class="prose max-w-none p-4">
+            <div class="prose max-w-[768px] mx-auto p-4 mt-4">
               <MDC :value="content" tag="article" />
             </div>
           </div>
