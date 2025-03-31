@@ -46,7 +46,7 @@
             title="저장하기"
             label="저장하기"
             :loading="loading"
-            @click="savePortfolio(markdownContent)"
+            @click="isSaveModalOpen = true"
           />
         </div>
 
@@ -83,7 +83,6 @@
               v-model="markdownContent"
               class="font-mono w-full flex-1 p-4 resize-none outline-none border-none overflow-auto"
               placeholder="내용을 입력하세요..."
-              @scroll="syncScroll"
             />
           </div>
 
@@ -104,6 +103,55 @@
       </div>
     </div>
   </div>
+
+  <UModal
+    v-model:open="isSaveModalOpen"
+    :dismissible="false"
+    title="포트폴리오를 저장하시겠습니까?"
+    description="포트폴리오 저장 정보를 입력해주세요"
+  >
+    <template #body>
+      <div class="flex flex-col gap-6 w-full">
+        <div class="space-y-2">
+          <p class="text-sm text-gray-500">포트폴리오 제목을 입력하세요.</p>
+          <input
+            type="text"
+            class="border border-gray-300 rounded p-2 w-full"
+            placeholder="포트폴리오 제목"
+            v-model="portfolioTitle"
+          />
+        </div>
+        <div class="space-y-2">
+          <USwitch
+            label="대표 포트폴리오로 설정"
+            v-model="isDefaultPortfolio"
+          />
+        </div>
+      </div>
+    </template>
+
+    <template #footer>
+      <div class="flex justify-end gap-2 w-full">
+        <UButton
+          variant="outline"
+          label="취소"
+          @click="isSaveModalOpen = false"
+        />
+        <UButton
+          variant="solid"
+          label="저장하기"
+          :loading="loading"
+          @click="
+            savePortfolio({
+              title: portfolioTitle,
+              content: markdownContent,
+              is_featured: isDefaultPortfolio,
+            })
+          "
+        />
+      </div>
+    </template>
+  </UModal>
 </template>
 
 <script setup lang="ts">
@@ -133,42 +181,44 @@ console.log("Hello, World!");
 [링크 예시](https://example.com)
 `);
 
+const portfolioTitle = ref("");
+
+const isDefaultPortfolio = ref(false);
+
 // 미리보기 모드 설정 (split: 분할, edit: 편집만, preview: 미리보기만)
 const previewMode = ref<"split" | "edit" | "preview">("split");
 
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 
+const isSaveModalOpen = ref(false);
+
+// 포트폴리오 관리 컴포서블
 const { loading, error, createPortfolio } = usePortfolio();
 
 // MarkdownEditor에서 전달받은 content를 저장
-const savePortfolio = async (content: string) => {
+const savePortfolio = async ({
+  title: title,
+  content: content,
+  is_featured: is_featured,
+}: {
+  title: string;
+  content: string;
+  is_featured: boolean;
+}) => {
   await createPortfolio({
-    title: "test",
+    title: title,
     content: content,
+    is_featured: is_featured,
   });
 
   if (error.value) {
     console.error("포트폴리오 저장 실패:", error.value);
   } else {
     console.log("포트폴리오 저장 성공");
+    isSaveModalOpen.value = false;
+    portfolioTitle.value = "";
+    isDefaultPortfolio.value = false;
   }
-};
-
-// 스크롤 동기화 함수
-const syncScroll = (e: Event) => {
-  if (previewMode.value !== "split") return;
-
-  const textarea = e.target as HTMLTextAreaElement;
-  const previewElem = document.querySelector(".prose");
-
-  if (!previewElem) return;
-
-  const scrollPercentage =
-    textarea.scrollTop / (textarea.scrollHeight - textarea.clientHeight);
-  const previewScrollMax = previewElem.scrollHeight - previewElem.clientHeight;
-
-  // 미리보기 영역의 스크롤 위치를 편집 영역과 동일한 비율로 설정
-  previewElem.scrollTop = previewScrollMax * scrollPercentage;
 };
 
 // 인라인 스타일 항목 타입 정의
@@ -217,14 +267,8 @@ const inlineItems: InlineItem[] = [
   },
 ];
 
-// NavigationMenuItem 타입 확장
-interface MarkdownMenuItem extends NavigationMenuItem {
-  onSelect?: () => void;
-  children?: MarkdownMenuItem[];
-}
-
 // 블록 스타일 항목
-const blockItems = ref<MarkdownMenuItem[][]>([
+const blockItems = ref<NavigationMenuItem[][]>([
   [
     {
       label: "마크다운",
@@ -338,12 +382,11 @@ const blockItems = ref<MarkdownMenuItem[][]>([
       defaultOpen: true,
       children: [
         {
-          label: "Link",
+          label: "스킬 뱃지",
           icon: "i-lucide-file-text",
-        },
-        {
-          label: "Modal",
-          icon: "i-lucide-file-text",
+          onSelect: () => {
+            insertStyleAtCursor("", ":skill-badge{label=Vue} ", "");
+          },
         },
       ],
     },
