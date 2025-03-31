@@ -5,11 +5,11 @@ export default defineNuxtConfig({
   modules: ["@nuxt/ui", "@nuxt/eslint", "@nuxtjs/supabase", "@nuxtjs/mdc"],
 
   supabase: {
-    redirect: false,
+    redirect: true,
     redirectOptions: {
       login: "/login",
       callback: "/confirm",
-      exclude: ["/"],
+      exclude: ["/", "/register"],
     },
   },
 

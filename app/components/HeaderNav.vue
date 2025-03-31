@@ -10,7 +10,7 @@
         >시작하기</UButton
       >
       <template v-else-if="user">
-        <UButton leading-icon="i-lucide-folder-open" variant="ghost"
+        <UButton leading-icon="i-lucide-folder-open" variant="outline"
           >내 포트폴리오</UButton
         >
         <UButton
@@ -18,6 +18,14 @@
           size="md"
           @click="$router.push('/create')"
           >새 포트폴리오</UButton
+        >
+        <UButton
+          variant="ghost"
+          leading-icon="i-lucide-log-out"
+          size="md"
+          @click="logout"
+        >
+          >로그아웃</UButton
         >
       </template>
     </div>
@@ -33,6 +41,16 @@ defineProps({
 });
 
 const user = useSupabaseUser();
+
+const logout = async () => {
+  const { error } = await useSupabaseClient().auth.signOut();
+  if (error) {
+    console.error("로그아웃 실패:", error);
+  } else {
+    console.log("로그아웃 성공");
+    window.location.href = "/";
+  }
+};
 
 const navigateToLogin = () => {
   // 현재 URL에서 호스트 부분 가져오기

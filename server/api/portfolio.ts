@@ -36,6 +36,8 @@ export default defineEventHandler(async (event) => {
       return response;
     }
 
+    console.log("123");
+
     response.profile = profile;
 
     // 포트폴리오 데이터 가져오기
@@ -44,6 +46,8 @@ export default defineEventHandler(async (event) => {
       .select("*")
       .eq("user_id", profile.id)
       .single();
+
+    console.log(portfolio);
 
     // 포트폴리오 데이터가 없어도 에러로 처리하지 않음 (존재하지 않을 수 있음)
     if (!portfolioError) {
