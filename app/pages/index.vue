@@ -31,14 +31,14 @@
 </template>
 
 <script setup lang="ts">
-import type { PortfolioApiResponse } from "@/types/api";
+import type { MainPortfolioApiResponse } from "@/types/api";
 
 definePageMeta({
   layout: "main",
 });
 
-const { data: portfolioData } = await useFetch<PortfolioApiResponse>(
-  "/api/portfolio",
+const { data: portfolioData } = await useFetch<MainPortfolioApiResponse>(
+  "/api/main-portfolio",
   {
     default: () => ({
       subdomain: "main",

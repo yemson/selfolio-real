@@ -48,8 +48,10 @@ export default defineEventHandler(async (event) => {
 
   // 서브도메인이 'main'이 아니고 존재하는 경우에만 라우트 제한 적용
   if (subdomain !== "main") {
+    console.log("서브도메인:", subdomain);
+
     // 허용된 경로 목록
-    const allowedPaths = ["/", "/api/portfolio"];
+    const allowedPaths = ["/", "/api/main-portfolio"];
 
     // 메인 도메인으로 리다이렉트하기 위한 특별 경로 목록
     const mainDomainRedirectPaths = ["/login"];
@@ -79,7 +81,7 @@ export default defineEventHandler(async (event) => {
     if (
       !allowedPaths.some(
         (allowedPath) =>
-          path === allowedPath || path.startsWith("/api/portfolio")
+          path === allowedPath || path.startsWith("/api/main-portfolio")
       )
     ) {
       // 서브도메인 유지하면서 루트 경로로 리다이렉트

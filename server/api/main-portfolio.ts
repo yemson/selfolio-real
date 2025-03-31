@@ -1,7 +1,7 @@
 // /server/api/portfolio.ts
 import { serverSupabaseClient } from "#supabase/server";
 import type { Database } from "@/types/supabase";
-import type { PortfolioApiResponse } from "@/types/api";
+import type { MainPortfolioApiResponse } from "@/types/api";
 import { getSubdomain } from "../utils/subdomain";
 
 export default defineEventHandler(async (event) => {
@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const subdomain = getSubdomain(event);
 
   // 기본 응답 구조
-  const response: PortfolioApiResponse = {
+  const response: MainPortfolioApiResponse = {
     subdomain,
     profile: null,
     portfolio: null,
@@ -36,8 +36,6 @@ export default defineEventHandler(async (event) => {
       return response;
     }
 
-    console.log("123");
-
     response.profile = profile;
 
     // 포트폴리오 데이터 가져오기
@@ -45,19 +43,21 @@ export default defineEventHandler(async (event) => {
       .from("portfolios")
       .select("*")
       .eq("user_id", profile.id)
+      .eq("is_featured", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .single();
-
-    console.log(portfolio);
 
     // 포트폴리오 데이터가 없어도 에러로 처리하지 않음 (존재하지 않을 수 있음)
     if (!portfolioError) {
       response.portfolio = portfolio;
     }
-  } catch (err) {
-    response.error = `데이터 가져오기 오류: ${
-      err instanceof Error ? err.message : String(err)
-    }`;
-  }
 
-  return response;
+    return response;
+  } catch (err) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: err instanceof Error ? err.message : String(err),
+    });
+  }
 });

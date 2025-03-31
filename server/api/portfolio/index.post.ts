@@ -14,11 +14,9 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // user_id 필드 추가
     const portfolioData = {
       ...body,
       user_id: user.id,
-      created_at: new Date().toISOString(),
     };
 
     const { data, error } = await supabase
@@ -35,18 +33,7 @@ export default defineEventHandler(async (event) => {
     }
 
     setResponseStatus(event, 201);
-    return {
-      success: true,
-      data,
-      error: null,
-    };
   } catch (err) {
-    // H3Error 처리
-    if (err instanceof Error && "statusCode" in err) {
-      throw err;
-    }
-
-    // 기타 오류 처리
     throw createError({
       statusCode: 500,
       statusMessage: err instanceof Error ? err.message : String(err),

@@ -25,7 +25,7 @@
           size="md"
           @click="logout"
         >
-          >로그아웃</UButton
+          로그아웃</UButton
         >
       </template>
     </div>
@@ -60,7 +60,7 @@ const navigateToLogin = () => {
 
   // 로컬호스트 환경 확인
   if (currentHost.includes("localhost")) {
-    loginUrl = `${protocol}//localhost:3000/login`;
+    loginUrl = `${protocol}//localhost:3000`;
   } else {
     // 모든 서브도메인에서 메인 도메인 추출 (www를 특별 취급하지 않음)
     const parts = currentHost.split(".");
@@ -71,7 +71,7 @@ const navigateToLogin = () => {
     const mainDomain =
       parts.length > 2 ? parts.slice(-2).join(".") : currentHost;
 
-    loginUrl = `${protocol}//${mainDomain}/login`;
+    loginUrl = `${protocol}//${mainDomain}`;
   }
 
   // 디버깅을 위한 로그
