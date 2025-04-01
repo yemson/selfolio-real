@@ -16,7 +16,7 @@
         <UButton
           leading-icon="i-lucide-plus"
           size="md"
-          @click="$router.push('/create')"
+          @click="$router.push('/portfolio/create')"
           >새 포트폴리오</UButton
         >
         <UButton
@@ -53,34 +53,34 @@ const logout = async () => {
 };
 
 const navigateToLogin = () => {
-  // 현재 URL에서 호스트 부분 가져오기
-  const currentHost = window.location.host;
-  const protocol = window.location.protocol;
-  let loginUrl;
+  const hostname = window.location.hostname;
+  const hostnameParts = hostname.split(".");
+  const isLocalhost =
+    hostname.includes("localhost") || hostname.includes("127.0.0.1");
 
-  // 로컬호스트 환경 확인
-  if (currentHost.includes("localhost")) {
-    loginUrl = `${protocol}//localhost:3000/login`;
-  } else {
-    // 모든 서브도메인에서 메인 도메인 추출 (www를 특별 취급하지 않음)
-    const parts = currentHost.split(".");
-
-    // 서브도메인이 있는 경우 (parts.length > 2) 메인 도메인만 추출
-    // example.com -> example.com
-    // subdomain.example.com -> example.com (www.example.com 포함)
-    const mainDomain =
-      parts.length > 2 ? parts.slice(-2).join(".") : currentHost;
-
-    loginUrl = `${protocol}//${mainDomain}/login`;
+  // 로컬호스트 환경에서의 서브도메인 확인
+  if (isLocalhost) {
+    // 예: test.localhost, dev.localhost인 경우
+    if (hostnameParts.length > 1 && hostnameParts[0] !== "localhost") {
+      // 로컬호스트에 서브도메인이 있는 경우, 루트 로컬호스트로 이동
+      window.location.href = `http://localhost:${window.location.port}/`;
+    } else {
+      // 일반 로컬호스트인 경우 로그인 페이지로 이동
+      window.location.href = "/login";
+    }
+    return;
   }
 
-  // 디버깅을 위한 로그
-  console.log("Original host:", currentHost);
-  console.log("Navigating to:", loginUrl);
+  // 프로덕션 환경에서의 서브도메인 확인
+  const isSubdomain = hostnameParts.length > 2;
 
-  // 해당 URL로 이동
-  window.location.href = loginUrl;
-
-  history.pushState(null, "", loginUrl);
+  if (isSubdomain) {
+    // 서브도메인이 있는 경우, 메인 도메인의 루트로 리다이렉트
+    const mainDomain = hostnameParts.slice(-2).join(".");
+    window.location.href = `https://${mainDomain}/`;
+  } else {
+    // 서브도메인이 없는 경우 (domain.com 형태), /login으로 리다이렉트
+    window.location.href = "/login";
+  }
 };
 </script>
