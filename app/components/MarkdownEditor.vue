@@ -14,7 +14,7 @@
       <div class="flex flex-col flex-1 h-full">
         <!-- 미리보기 모드 선택 -->
         <div
-          class="border-b border-gray-200 p-2 bg-gray-50 flex justify-between items-center"
+          class="border-b border-gray-200 p-2 bg-gray-50 flex justify-end items-center"
         >
           <div class="space-x-1">
             <UButton
@@ -39,17 +39,6 @@
               @click="previewMode = 'preview'"
             />
           </div>
-
-          <!-- 저장 버튼: 이제 부모 컴포넌트에서 전달받은 핸들러 사용 -->
-          <UButton
-            icon="i-lucide-save"
-            size="sm"
-            variant="outline"
-            title="저장하기"
-            label="저장하기"
-            :loading="loading"
-            @click="$emit('save-click')"
-          />
         </div>
 
         <!-- 나머지 에디터 UI는 동일 -->

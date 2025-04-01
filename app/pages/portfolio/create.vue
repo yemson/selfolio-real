@@ -1,10 +1,21 @@
 <template>
   <div class="border-t border-gray-200">
-    <MarkdownEditor
-      v-model="markdownContent"
-      :loading="loading"
-      @save-click="isSaveModalOpen = true"
-    />
+    <div
+      class="flex items-center justify-between p-4 bg-white border-b border-gray-200"
+    >
+      <h1 class="font-bold">포트폴리오 작성</h1>
+
+      <div class="flex items-center gap-2">
+        <UButton variant="outline" label="뒤로가기" @click="$router.back()" />
+        <UButton
+          variant="solid"
+          label="저장하기"
+          @click="isSaveModalOpen = true"
+        />
+      </div>
+    </div>
+
+    <MarkdownEditor v-model="markdownContent" :loading="loading" />
 
     <UModal
       v-model:open="isSaveModalOpen"

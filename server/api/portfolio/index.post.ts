@@ -33,10 +33,9 @@ export default defineEventHandler(async (event) => {
     // 새로운 포트폴리오 삽입
     const portfolioData = {
       ...body,
-      user_id: user.id,
     };
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("portfolios")
       .insert(portfolioData)
       .select()
