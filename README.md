@@ -29,7 +29,7 @@ Selfolio는 개발자들이 마크다운으로 포트폴리오를 쉽게 작성�
 
 1. 저장소 클론:
    ```bash
-   git clone https://github.com/your-username/selfolio.git
+   git clone https://github.com/yemson/selfolio.git
    cd selfolio
    ```
 
