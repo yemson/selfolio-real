@@ -29,8 +29,8 @@ Selfolio는 개발자들이 마크다운으로 포트폴리오를 쉽게 작성�
 
 1. 저장소 클론:
    ```bash
-   git clone https://github.com/your-username/selfolio.git
-   cd selfolio
+   git clone https://github.com/yemson/selfolio-real.git
+   cd selfolio-real
    ```
 
 2. 의존성 설치:
